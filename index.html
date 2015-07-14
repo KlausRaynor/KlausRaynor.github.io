@@ -1,39 +1,23 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css">
-  <link rel='stylesheet' href='css/style.css'>
-  <script src='js/script.js'></script>
+	<meta charset="UTF-8">
+	<title>S15 project</title>
+	<link href='css/style.css'>
+	<script src='js/script.js'></script>
 </head>
+<body>
 
-<!-- Replace Kanye's name with your own, and include your own information and links in the HTML below.  You can change the icons by using Font Awesome icons here: http://fortawesome.github.io/Font-Awesome/ -->
+<div class='camera'>
+	<video id='video'>Browser not supported!</video>
+	<button id='start'>Take photo</button>
+</div>
 
-<body id="people">
-  <div id='klausholder' class='person flip-container'>
-    <div class='flipper'>
-      <div class='front card'>
-        <h2>Klaus Holder</h2>
-        <div class='headshot'></div>
-        
-        <i class="fa fa-undo flip"></i>
-      </div>
-      <div class='back card'>
-        <ul>
-          <li><i class="fa fa-home"></i><a href='http://foobooks.klausholder.me/'>klausholder.me</a>
-          </li>
-          <li><i class="fa fa-github"></i><a href='https://github.com/klausraynor'>klausraynor</a>
-          </li>
-          <li><i class="fa fa-twitter"></i><a href='https://twitter.com/klausraynor'>@klausraynor</a>
-          </li>
-          <li><i class="fa fa-envelope"></i><a href='mailto:kholder@g.harvard.edu'>@g.harvard.edu</a>
-          </li>
-          <li><i class="fa fa-linkedin"></i><a href='https://www.linkedin.com/in/klausholder'>KlausHolder</a>
-          </li>
-        </ul>
-        <i class="fa fa-undo flip"></i>
-      </div>
-    </div>
-  </div>
+<canvas id='canvas'>
+</canvas>
+<div class='output'>
+<img id='photo' alt='screen capture'>
+</div>
+	
 </body>
-
 </html>
