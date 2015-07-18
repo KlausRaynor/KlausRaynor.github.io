@@ -76,6 +76,7 @@
 
 	function takepicture() {
 		var context = canvas.getContext('2d');
+		
 		if(width && height){
 			canvas.width = width;
 			canvas.height = height;
@@ -86,6 +87,7 @@
 		} else {
 			clearphoto();
 		}
+
 	}
 
 	window.addEventListener('load', startup, false);
