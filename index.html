@@ -1,23 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>S15 project</title>
-	<link href='css/style.css'>
-	<script src='js/script.js'></script>
+  <!--fixes the character encoding issue causing hypens, etc. to appear as special characters-->
+<!--   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ -->  <meta charset="UTF-8">
+
+  <!-- imports Nunito font from Google Fonts, so it can be assigned through CSS -->
+  <link href='http://fonts.googleapis.com/css?family=Nunito' rel='stylesheet' type='text/css'>
+
+  <link rel='stylesheet' type="text/css" href="css/styles.css">
+<!-- 
+  <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCO3fg2p5XKQxFip1i8bsxv-cO4UcDwFUM"></script>
+ -->
+  <title>Doodloo Prototype Page</title>
 </head>
 <body>
 
-<div class='camera'>
-	<video id='video'>Browser not supported!</video>
-	<button id='start'>Take photo</button>
-</div>
+<!--   <div class="camera">
+    <video id="video">Video stream not available.</video>
+    <button id="startbutton">Take photo</button>
+  </div>
 
-<canvas id='canvas'>
-</canvas>
-<div class='output'>
-<img id='photo' alt='screen capture'>
-</div>
-	
-</body>
+    <canvas id="canvas">
+  </canvas>
+  <div class="output">
+    <img id="photo" alt="The screen capture will appear in this box.">
+  </div>
+ -->
+
+  <div id="alt-splash">
+    <div id="alt-wrapper">
+      <h1 id="alt-site-title">Doodloo</h1> 
+      <p>Place your drawing in the view of your computer's built-in camera. <br> Center it as best you can, and make sure the frame is as well-lit as possible. <br> Click "Capture".</p>
+      <span class="media-wrapper">
+        <video id="video"></video>
+        <span class="overlay">Center your drawing here so it fills the screen.</span>
+      </span>
+      <span class="media-wrapper">
+        <canvas id="canvas"></canvas>
+        <span class="overlay">Captured picture appears here.</span>
+      </span>
+      <span class="media-wrapper">
+        <canvas id="canvas2"></canvas>
+        <span class="overlay">Mean filtered Image appears here.</span>
+      </span>
+
+      <br>
+      <button id="startbutton">Capture</button>
+      <button id="pixelate">Pixelate</button>
+    </div>
+  </div>  
+
+ </body>
+<script type="text/javascript" src="js/doodloo.js"></script>
 </html>
+
+
+

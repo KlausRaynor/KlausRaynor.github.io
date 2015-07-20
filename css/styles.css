@@ -1,0 +1,98 @@
+body {
+    padding: 0;
+    margin: 0;
+    font-family: Nunito, helvetica, sans-serif;
+    font-size: 18px;
+    color: #000;
+}
+
+/**************************************Pertaining to the alt, camera-based splash page*/
+#alt-splash {
+    height:1200px; /*same as #splash, so they can be swapped back and forth*/
+    background-color:rgba(0,0,0,.8);
+/*    display:none;*/
+}
+#alt-wrapper {
+    margin:auto;
+    padding:5% 5% 0 5%;
+}
+#alt-site-title {
+    padding:0;
+    margin:0;
+    text-align: center;
+    color:white;
+}
+p {
+    padding:0;
+    margin:10px 0 20px 0;
+    color:#ccc;
+    text-align:center;
+}
+.media-wrapper { 
+  /* needed for overlay */ 
+  position:relative;
+  padding:0;
+  margin:0 20px 0 20px;
+}
+#video, #canvas, #canvas2 {
+    border-radius:10px 10px 0 0;
+    background-color:#ccc;
+}
+.overlay {
+    /* needed for overlay */
+    position:absolute;
+    bottom:0;
+    left:0;
+
+    /* just for looks */
+    font-size:14px;
+    font-family:Helvetica,sans-serif;
+    text-align: center;
+    padding:5px 0 0 0;
+    height:30px;
+    width:350px;
+    background-color:rgba(255,255,255,.8);
+}
+button {
+    height:40px;
+    width:140px;
+    background-color:#ccc;
+    border:solid 1px;
+    border-radius:10px;
+    font-size:18px;
+    font-family:'Arvo',Helvetica,sans-serif;
+    margin:15px 0 0 570px;
+    cursor:pointer;
+}
+
+/**************************************Pertaining to the navbar*/
+ul#nav {
+    /*For horizontal nav*/
+    list-style-type: none;
+    
+    width: 100%;
+    padding: 0;
+    margin: auto;
+    font-size: 18px;
+    font-family: helvetica, sans-serif;
+    text-decoration: none;
+    box-shadow: 0 2px 2px #606060;
+}
+#nav li {
+    /*For horizontal nav*/
+    float: left;
+    
+    /*Set width of navbar items to be 100% width/# of li's - left-right padding btw li's*/
+    width: calc(100%/5 - 10px);
+    padding: 5px;
+    text-align: center;
+    background-color: #FFFFFF;
+
+    border-top: solid 1px;
+    border-bottom: solid 1px;
+}
+#nav a {
+    padding: 0;
+    text-decoration: none;
+    color: black;
+}
