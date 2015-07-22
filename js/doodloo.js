@@ -68,40 +68,50 @@
 // logic for averaging out the color of image taken with the camera
 //loop iterates from y = 1 by adding the square root of the block size.
 //loop iterates from x = 1 by adding the square root of the block size.
-//if statement starts at x:1, y:1
-//call getAverage(getIndexes(getNeighborhood()));
 
-//GLOBALS
+//initializing DOM elements
 var pixelateBtn  = document.querySelector('#pixelate');
- var canvas       = document.querySelector('#canvas');
- var canvas2      = document.querySelector('#canvas2');
- var ctx         = canvas.getContext('2d');
- var ctx2        = canvas2.getContext('2d');
+var canvas       = document.querySelector('#canvas');
+var canvas2      = document.querySelector('#canvas2');
+var ctx          = canvas.getContext('2d');
+var ctx2         = canvas2.getContext('2d');
+
+ //////////////////////////////////////////////////////
 
  var blockSize   = 9;  //change if we want more pixelation.
  var width       = 336; //hard coding these two numbers!
  var height      = 252; //hard coding these two numbers!
  var r           = 1; //radius around home pixel!
- var imageData;
- var data; 
+ var imageData;              //found in pixelate()
+ var data;                   //found in pixelate()
+ var neighborhoodIndexArray; //found in pixelate()
+ var rgbAverageArray;        //found in pixelate()
+ var indexArray  = [];       //found in getIndexes()
+ var j           = 0;        // found in getIndexes() used for counter of indexArray
+ var genericCounter = 0;     //our final pixelated image should be a 84 x 112 'pixelated' image.  This means 
+                             //we run through the for loops 9,408 times.
+
+
 //when pixelate is clicked, run this
 function pixelate() {
+
  imageData   = ctx.getImageData(0, 0, canvas.width, canvas.height); //must define imageData and data var
  data        = imageData.data;                                      // within pixelate function to grab data...
   for(var y = 1; y < height; y+=Math.sqrt(blockSize)) {
     for(var x = 1; x < width; x+=Math.sqrt(blockSize)){
-          var neighborhoodIndexArray = getIndexes(getNeighborhood(x,y,r));
-          var rgbAverageArray = getAverage(neighborhoodIndexArray, data);
-        
-          //overwrite data at index value with newrgbAverage value.
+
+          neighborhoodIndexArray = getIndexes(getNeighborhood(x,y,r));
+          rgbAverageArray = getAverage(neighborhoodIndexArray, data);
+
           neighborhoodIndexArray.forEach(function(value) { 
            data[value] = rgbAverageArray[0];
            data[value + 1] = rgbAverageArray[1];
            data[value + 2] = rgbAverageArray[2];  
           });
+          neighborhoodIndexArray.splice(0, neighborhoodIndexArray.length);
+          rgbAverageArray.splice(0, rgbAverageArray.length);
     } //end for x
   } //end for y
-
 } //end pixelate()
 
 
@@ -116,49 +126,52 @@ ctx2.putImageData(imageData, 0, 0);
 
 //functions for stuff!! ! AGGHGHHHHH
 
+//this function finds and reports the coordinates around a central pixel coordinate.
 function getNeighborhood(x, y, r) {
-  var neighborArray = new Array();
-  neighborArray += x - r;
-  neighborArray += y - r;
 
-  neighborArray += x;
-  neighborArray += y - r;
+  var neighborArray = [];
+  neighborArray[0] = x - r;
+  neighborArray[1] = y - r;
 
-  neighborArray += x + r;
-  neighborArray += y - r;
+  neighborArray[2] = x;
+  neighborArray[3] = y - r;
 
-  neighborArray += x - r;
-  neighborArray += y;
+  neighborArray[4] = x + r;
+  neighborArray[5] = y - r;
 
-  neighborArray += x; //center
-  neighborArray += y; //center
+  neighborArray[6] = x - r;
+  neighborArray[7] = y;
 
-  neighborArray += x + r;
-  neighborArray += y;
+  neighborArray[8] = x; //center
+  neighborArray[9] = y; //center
 
-  neighborArray += x - r;
-  neighborArray += y + r;
+  neighborArray[10] = x + r;
+  neighborArray[11] = y;
 
-  neighborArray += x;
-  neighborArray += y + r;
+  neighborArray[12] = x - r;
+  neighborArray[13] = y + r;
 
-  neighborArray += x + r;
-  neighborArray += y + r;
+  neighborArray[14] = x;
+  neighborArray[15] = y + r;
 
-  //return array to getIndexes
+  neighborArray[16] = x + r;
+  neighborArray[17] = y + r;
+  //return array of length 18 mapped to 9 pixel coordinates.
   return neighborArray;
 
 }
 function getIndexes(nArray) {  //argument is neighborArray from getNeighbor()
-    var indexArray = [];
-    var j = 0;
-    for(i = 0; i < nArray.length; i+=2) {
-        indexArray[j] = (parseInt(nArray[i + 1], 10) * height) + parseInt(nArray[i], 10); //formula converting coordinates to index.  Takes y coord * height + x coord
+    
+      //counter for indexArray index position is j
+    for(var z = 0; z < nArray.length; z+=2) {
+        indexArray[j] = (nArray[z + 1] * height * 4) + (nArray[z]); //formula converting coordinates to index.  
+                                                                  //Takes y coord * height + x coord
+                                                                  //calculates for all 4 values!! Remember??
         j++;
     }
      j = 0; //reset indexArray counter (maybe unnecessary?)
      return indexArray;
-    //return array of indexes to getAverage();
+    //return array of 9 indexes 
 }
 
 function getAverage(indexArray, dataArray) {
@@ -169,7 +182,7 @@ function getAverage(indexArray, dataArray) {
   var averagedArray = [];
   var length = indexArray.length;
 
-  for(i = 0; i < length; i++){
+  for(var i = 0; i < length; i++){
     red += dataArray[indexArray[i]];
     blue += dataArray[indexArray[i] + 1];
     green += dataArray[indexArray[i] + 2];
