@@ -1,43 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <meta charset="UTF-8">
-
-  <!-- imports Nunito font from Google Fonts, so it can be assigned through CSS -->
-  <link href='http://fonts.googleapis.com/css?family=Nunito' rel='stylesheet' type='text/css'>
-
-  <link rel='stylesheet' type="text/css" href="css/styles.css">
-
-  <title>Doodloo Prototype Page</title>
+  <meta charset="UTF-8">
+  <script src="js/physicsjs-full.min.js"></script>
+  <script type="text/javascript" src="js/mootools-1.2.4.js"></script>
+  <script type="text/javascript" src="js/graham_scan.min.js"></script>
+  <script type="text/javascript" src="js/snap.svg-min.js"></script>
+  <script type="text/javascript" src="js/convexHull.js"></script>
+  <script type="text/javascript" src="js/drawSVG.js"></script>
+  <script type="text/javascript" src="js/FindBlob.js"></script> 
 </head>
+
 <body>
+<video id='video' style='display:inline-block;'></video><button id='startbutton'>Capture</button>
+<canvas id="myCanvas" style="border:1px solid #aaa;"></canvas> 
+<canvas id='viewport' style='border:1px solid #AAA;'></canvas><br>
+<canvas id='playground' style='border:1px solid #aaa'></canvas>
 
-  <div id="alt-splash">
-    <div id="alt-wrapper">
-      <h1 id="alt-site-title">Doodloo</h1> 
-      <p>Place your drawing in the view of your computer's built-in camera. <br> Center it as best you can, and make sure the frame is as well-lit as possible. <br> Click "Capture".</p>
-      <span class="media-wrapper">
-        <video id="video"></video>
-        <span class="overlay">Center your drawing here so it fills the screen.</span>
-      </span>
-      <span class="media-wrapper">
-        <canvas id="canvas"></canvas>
-        <span class="overlay">Captured picture appears here.</span>
-      </span>
-      <span class="media-wrapper">
-        <canvas id="canvas2"></canvas>
-        <span class="overlay">pixelated Image appears here.</span>
-      </span>
+<script>
+//vars
+var imgData;
+var newImgData;
+var labelMap;
+var poly;
+var scale = 2;
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+var playground = document.querySelector('#playground');
+var pctx = playground.getContext('2d');
+//var myImg = new Image();
+var threshold = 70;
+playground.width = 600;
+playground.height = 600;
 
-      <br>
-      <button id="startbutton">Capture</button>
-      <button id="pixelate">Pixelate</button>
-    </div>
-  </div>  
 
- </body>
-<script type="text/javascript" src="js/doodloo.js"></script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// connects built-in camera and reads output to take still picture
+
+(function() {
+
+  var streaming = false,
+      video        = document.querySelector('#video'),
+      canvas       = document.querySelector('#myCanvas'),
+      startbutton  = document.querySelector('#startbutton'),
+      width = 336,
+      height = 0;
+
+  navigator.getMedia = ( navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.mozGetUserMedia ||
+                         navigator.msGetUserMedia);
+
+  navigator.getMedia(
+    {
+      video: true,
+      audio: false
+    },
+    function(stream) {
+      if (navigator.mozGetUserMedia) {
+        video.mozSrcObject = stream;
+      } else {
+        var vendorURL = window.URL || window.webkitURL;
+        video.src = vendorURL.createObjectURL(stream);
+      }
+      video.play();
+    },
+    function(err) {
+      console.log("An error occured! " + err);
+    }
+  );
+
+  video.addEventListener('canplay', function(ev){
+    if (!streaming) {
+      height = video.videoHeight / (video.videoWidth/width);
+      video.setAttribute('width', width);
+      video.setAttribute('height', height);
+      canvas.setAttribute('width', width);
+      canvas.setAttribute('height', height);
+      streaming = true;
+    }
+  }, false);
+
+  function takepicture() {
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+  }
+
+  startbutton.addEventListener('click', function(ev){
+    console.log('capture clicked!');
+      takepicture();
+    ev.preventDefault();
+
+//added functionality from imageTesting_onLoad function to start button capture. 
+    var MAX_WIDTH = canvas.width;
+    var MAX_HEIGHT = canvas.height;
+  
+   var width = MAX_WIDTH ;
+   var height = MAX_HEIGHT ;
+
+    imgData = ctx.getImageData(0, 0, c.width, c.height);
+
+  // keeping the hand drawn stroke and turning the rest of the image to transparent 
+     isolate();
+
+    labelMap = FindBlobs(imgData);
+
+    // Drawing the polyline
+    poly = convexHull(labelMap);
+
+    drawSVG(poly, height, width);  
+
+    //get convex hull to pass to physics
+    var cHull = new ConvexHullGrahamScan();
+        for(var i = 0; i < labelMap.length; i++) {
+        for(var j = 0; j < labelMap[i].length; j++) {
+            if ( labelMap[i][j] != 0) {
+                cHull.addPoint(j, i);
+            }
+        }
+    } 
+    //pass vertices to physics
+    var vertices = cHull.getHull();
+    doodleWorld(vertices);
+    console.log('past doodleworld call');
+
+
+
+
+  }, false);
+
+})();
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// myImg.onload = CreateDelegate(myImg, imgTesting_onload);
+// myImg.src =  "img/crescent_moon.png";
+
+// This method of calling the onload prevents the "cross origin" error
+// function CreateDelegate(contextObject, delegateMethod)
+// {
+//     return function()
+//     {
+//         return delegateMethod.apply(contextObject, arguments);
+//     }
+// }
+
+// function imgTesting_onload() {
+//   var MAX_WIDTH = myImg.width;
+//   var MAX_HEIGHT = myImg.height;
+
+//   //scales img drawn by percent
+//   var width = MAX_WIDTH / scale;
+//   var height = MAX_HEIGHT / scale;
+
+//     // creating a context and drawing the image on canvas
+//     c.width = width;
+//     c.height = height;
+//     var ctx = c.getContext("2d");
+//     ctx.drawImage(myImg, 0, 0, width, height);
+ 
+//     // extracting image data
+//     imgData = ctx.getImageData(0, 0, c.width, c.height);
+
+//     // keeping the hand drawn stroke and turning the rest of the image to transparent 
+//     isolate();
+
+//     labelMap = FindBlobs(imgData);
+//     // Drawing the polyline
+//     poly = convexHull(labelMap);
+
+//     drawSVG(poly, height, width);  
+
+//     //get convex hull to pass to physics
+//     var cHull = new ConvexHullGrahamScan();
+//         for(var i = 0; i < labelMap.length; i++) {
+//         for(var j = 0; j < labelMap[i].length; j++) {
+//             if ( labelMap[i][j] != 0) {
+//                 cHull.addPoint(j, i);
+//             }
+//         }
+//     } 
+//     //pass vertices to physics
+//     var vertices = cHull.getHull();
+//     doodleWorld(vertices);
+//     console.log('past doodleworld call');
+// }
+
+// Removes the areas of the image that are not associated with the user's drawing
+function isolate() {
+var r, g, b, a;
+    // get pixel values    
+
+    for (var i = 0; i < imgData.data.length; i = i + 4) {
+      r, g, b, a = 0;
+      // extract individual channel values, r=red, g=green, b=blue, a=alpha
+      r = imgData.data[i];
+      g = imgData.data[i + 1];
+      b = imgData.data[i + 2];
+      a = imgData.data[i + 3];
+
+        var v = (0.2126*r + 0.7152*g + 0.0722*b <= threshold) ? 255 : 0;
+        imgData.data[i + 3] = v;
+
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+
+}
+
+
+//PhysicsJS
+function doodleWorld(verts) {
+
+  Physics(function(world){
+  var renderer = Physics.renderer('canvas', {
+      el: 'playground', // id of the canvas element
+      width: 600,
+      height: 600
+  });
+  world.add( renderer );
+
+  var polygon = Physics.body('convex-polygon', {
+      x: 10,
+      y: 10,
+    vertices: verts
+      
+  });
+  world.add( polygon );
+  world.render();
+
+  // subscribe to ticker to advance the simulation
+  Physics.util.ticker.on(function( time, dt ){
+      world.step( time );
+  });
+
+  // start the ticker
+  Physics.util.ticker.start();
+
+  world.on('step', function(){
+      world.render();
+  });
+  world.add( Physics.behavior('constant-acceleration') );
+  var bounds = Physics.aabb(0, 0, 1000,200);
+
+  world.add( Physics.behavior('edge-collision-detection', {
+      aabb: bounds,
+    //  restitution: 0.3
+  }) );
+  // ensure objects bounce when edge collision is detected
+  world.add( Physics.behavior('body-impulse-response') );
+  });
+};
+
+
+</script>
+</body>
 </html>
-
-
-

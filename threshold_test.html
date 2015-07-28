@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script type="text/javascript" src="js/mootools-1.2.4.js"></script>
+</head>
+
+<body>
+
+<!-- <img id="myImg" src="hand_drawn_circle.png" width="300" height="150" /> -->
+<canvas id="myCanvas" width="500" height="500" style="border:1px solid #d3d3d3;"></canvas>
+
+<script>
+
+var imgData;
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+var myImg = new Image();
+var threshold = 200;
+// myImg.src = 'hand_drawn_circle.png';
+// var initW = myImg.ClientWidth, initH = myImg.ClientHeight;
+// console.log(myImg.width + "," + myImg.height);
+
+// myImg.addEventListener('load', function() {
+//     console.log("Loaded");
+//     ctx.drawImage(myImg, 0, 0);
+
+// imgData = ctx.getImageData(0, 0, myImg.width, myImg.height);
+// // console.log("My imgData", imgData.data[0]);
+// copy();
+
+// })
+
+function CreateDelegate(contextObject, delegateMethod)
+{
+    return function()
+    {
+        return delegateMethod.apply(contextObject, arguments);
+    }
+}
+
+function imgTesting_onload()
+{
+    // initW = this.width;
+    // initH = this.height;
+    // alert(this.width + " by " + this.height);
+    // return [initW, initH];
+
+    console.log("Loaded");
+    ctx.drawImage(myImg, 0, 0);
+
+    console.log(this.width, this.height);
+imgData = ctx.getImageData(0, 0, c.width, c.height);
+// console.log("My imgData", imgData.data[0]);
+
+// resize(this.width, this.height);
+// console.log(this.width, this.height);
+
+copy();
+
+}
+
+myImg.onload = CreateDelegate(myImg, imgTesting_onload);
+// myImg.crossOrigin = "Anonymous";
+myImg.src =  "hand_drawn_circle.png";
+// var imgDimensions = imgTesting_onload();
+// console.log(imgDimensions[0],imgDimensions[1]);
+
+
+// window.addEvent('domready', function(){
+//     var img = new Image();
+//     img.src = 'hand_drawn_circle.png';
+//     // var img = $('image-landscape
+
+function resize(initialWidth, initialHeight) {
+
+    // var initW = img.width, initH = img.height;
+    // console.log(initW + "," + initH);
+
+// resizing image
+
+    $each($$('.controls LI A'), function(el, i){
+        el.addEvent('click', function(e){
+            e = new Event(e).stop();
+
+            var newW = initialWidth, newH = 0;
+            switch(el.rel){
+                case 'zoomOut':
+                    newW -= 20; 
+                    break;
+                case 'zoomIn':
+                    newW += 20;
+                    break;
+                case 'resizeProportionally':
+                    var newSize = scaleSize(200, 200, $(el.rev).width, $(el.rev).height);
+                    $(el.rev).width = newSize[0];
+                    $(el.rev).height = newSize[1];
+                    return;
+                default:
+                    newW = initialWidth;                   
+            }
+
+            var ratio = initialHeight / initialWidth;
+            newH = newW * ratio;
+
+            img.width = newW;
+            img.height = newH;
+        });
+    });
+}
+
+// var newSize = scaleSize(200, 200, myImg.width, myImg.length);
+// alert('New Width: ' + newSize[0] + ', New Height: ' + newSize[1]);
+
+
+// calculates the new size of the image
+
+function scaleSize(maxW, maxH, currW, currH){
+
+var ratio = currH / currW;
+
+    if(currW >= maxW && ratio <= 1) {
+        currW = maxW;
+        currH = currW * ratio;
+        } else if (currH >= maxH){
+    currH = maxH;
+    currW = currH / ratio;
+    }
+// console.log (currW, currH);
+return [currW, currH];
+}
+
+function copy() {
+
+    // get pixel values    
+
+    for (var i = 0; i < imgData.data.length; i = i + 4) {
+
+    	// extract individual channel values, r=red, g=green, b=blue, a=alpha
+    	r = imgData.data[i];
+    	g = imgData.data[i + 1];
+    	b = imgData.data[i + 2];
+    	a = imgData.data[i + 3];
+
+        var v = (0.2126*r + 0.7152*g + 0.0722*b <= threshold) ? 255 : 0;
+        imgData.data[i + 3] = v;
+
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+}
+
+</script>
+
+
+<br/><button onclick="copy()">Extract</button>
+
+</body>
+</html>

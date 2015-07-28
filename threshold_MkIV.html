@@ -1,0 +1,482 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+<video id='video' style='display:inline-block;'></video>
+<button id='startbutton'>Capture</button>
+<canvas id="canvas" width="500" height="500" style="border:1px solid #d3d3d3;display:inline-block;"></canvas>
+<span id='empty'></span>
+<button id='extract'>Extract</button><br>
+<canvas id='viewport' style='border:1px solid #AAA;height:500px;width:500px;display:block;'></canvas>
+
+<!--  physics.js  -->
+        <script src="js/physicsjs-full.min.js"></script>
+
+<script>
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// connects built-in camera and reads output to take still picture
+
+(function() {
+
+  var streaming = false,
+      video        = document.querySelector('#video'),
+      canvas       = document.querySelector('#canvas'),
+      startbutton  = document.querySelector('#startbutton'),
+      width = 336,
+      height = 0;
+
+  navigator.getMedia = ( navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.mozGetUserMedia ||
+                         navigator.msGetUserMedia);
+
+  navigator.getMedia(
+    {
+      video: true,
+      audio: false
+    },
+    function(stream) {
+      if (navigator.mozGetUserMedia) {
+        video.mozSrcObject = stream;
+      } else {
+        var vendorURL = window.URL || window.webkitURL;
+        video.src = vendorURL.createObjectURL(stream);
+      }
+      video.play();
+    },
+    function(err) {
+      console.log("An error occured! " + err);
+    }
+  );
+
+  video.addEventListener('canplay', function(ev){
+    if (!streaming) {
+      height = video.videoHeight / (video.videoWidth/width);
+      video.setAttribute('width', width);
+      video.setAttribute('height', height);
+      canvas.setAttribute('width', width);
+      canvas.setAttribute('height', height);
+      streaming = true;
+    }
+  }, false);
+
+  function takepicture() {
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+  }
+
+  startbutton.addEventListener('click', function(ev){
+    console.log('capture clicked!');
+      takepicture();
+    ev.preventDefault();
+  }, false);
+
+})();
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//begins pixel data extraction process
+
+var imgData;
+var newImgData;
+var labelMap;
+var c = document.getElementById("canvas");
+var ctx = c.getContext("2d");
+var threshold = 70; //change value depending on needs
+var span = document.querySelector('#empty');
+var playground = document.querySelector('#viewport');
+var playgroundCtx = playground.getContext('2d');
+
+var startbutton = document.querySelector('#startbutton');
+var extractButton = document.querySelector('#extract');
+
+//CAPTURE BUTTON //////////////////////////////////////////  CALLS FindBLOB() FUNCTION
+startbutton.addEventListener('click', function() {
+    console.log('capture clicked in a different context');
+    imgData = ctx.getImageData(0, 0, c.width, c.height);
+    newImgData = imgData;
+    labelMap = FindBlobs(newImgData);
+});
+
+//lots of CSS button stuff following
+//created in the ether for fun and profit
+var addButton = document.createElement('button');
+addButton.setAttribute('id', 'addButton');
+var addText = document.createTextNode('add to playground');
+var restartButton = document.createElement('button');
+var restartText = document.createTextNode('restart capture process');
+
+extractButton.addEventListener('click', function() {
+
+  copy();
+
+  video.style = 'display:none;';  //hide video feed and start button.
+  startbutton.style = 'display:none;';
+
+  addButton.style='width:100px; height:100px;border-radius:10px;border:1px solid #aaa;margin:10px;';
+  addButton.appendChild(addText);
+  span.appendChild(addButton);
+
+  //if you want to restart...
+  //on click of extract it styles and displays the previously defined 'restart' button which has a defined click function below.
+  restartButton.style='width:100px; height:100px;border-radius:10px;border:1px solid #aaa;margin:10px;';
+  restartButton.appendChild(restartText);
+  span.appendChild(restartButton);
+  extractButton.style='display:none;';
+});
+
+
+restartButton.addEventListener('click', function() {
+  //display all hidden elements  
+  video.style = 'display:inline-block';
+  startbutton.style = 'display:inline-block;';
+  canvas.style = 'display:inline-block;';
+  extractButton.style = 'display:inline-block;';
+
+  //remove created DOM elements..
+  restartButton.removeChild(restartText);
+  span.removeChild(restartButton);
+  addButton.removeChild(addText);  //will get node not found error if addButton had been clicked before restart.
+  span.removeChild(addButton);
+ 
+  
+});
+
+
+//This button needs to make a call to 'createBlobObject()' which will paint blob object into playground canvas.
+//create blob objects takes our processed ('extracted') image data, the blobMap, and a 2d rgb array.
+addButton.addEventListener('click', function() {
+  canvas.style='display:none;';
+
+  //  createBlobObject(imgData, labelMap//, [
+  // //       [0,0,0,255], //black
+  // //       [255,0,0,255], //red
+  // //       [0,255,0,255], //blue
+  // //       [0,0,255,255], //green
+  // //       [255,255,0,255], //purple
+  // //       [255,0,255,255], //yellow
+  // //       [0,255,255,255] //blue-green =_=
+  // //   ]
+  //    );
+
+  playgroundCtx.putImageData(imgData, 0, 0);
+
+  addButton.removeChild(addText);
+  span.removeChild(addButton);
+
+  console.log('object added!');
+});
+
+// getting data for the outer boundar of a set of pixels
+// var convexHull = new ConvexHullGrahamScan();
+
+// var XYArray = blobMap.forEach(getXY);
+
+//add points (needs to be done for each point, a foreach loop on the input array can be used.)
+
+// forEach. 
+// convexHull.addPoint(x, y);
+
+// get the x,y coordinates for a given pixel index when provided with the width of the image
+
+function getXY(i, imageWidth) {
+  var y = Math.floor(i / imageWidth);
+  var x = i - imageWidth * y;
+
+  return [x, y];
+}
+
+
+
+function copy() {  //called onclick of Extract button
+    
+    for (var i = 0; i < imgData.data.length; i = i + 4) {
+
+    	// extract individual channel values, r=red, g=green, b=blue, a=alpha
+    	r = imgData.data[i];
+    	g = imgData.data[i + 1];
+    	b = imgData.data[i + 2];
+    	a = imgData.data[i + 3];
+
+        var v = (0.2126*r + 0.7152*g + 0.0722*b <= threshold) ? 255 : 0;
+
+        // Changing the surrounding pixels to transparent. 
+        //temporary, but for now just changing everything to be black.
+        // imgData.data[i] = 0;
+        // imgData.data[i + 1] = 0;
+        // imgData.data[i + 2] = 0;
+        imgData.data[i + 3] = v;
+
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+}
+
+//this function has to take the imageData, compare it to the label map, and toss it into the playground.
+function createBlobObject(dst, blobs, colors) {
+
+  
+      var xSize = dst.width,
+        ySize = dst.height,
+        dstPixels = dst.data,
+        x, y, pos;
+
+    var label, color, nColors = colors.length;
+
+    for( y = 0; y < ySize; y++){
+        for(x = 0; x < xSize; x++){
+            pos = (y * xSize + x) * 4;
+
+            label = blobs[y][x];
+
+            if( label !== 0 ){  //if coordinate of blob is visible... (aka not 0)
+                color = colors[ label % nColors ];
+                dstPixels[ pos+0 ] = color[0];
+                dstPixels[ pos+1 ] = color[1];
+                dstPixels[ pos+2 ] = color[2];
+                dstPixels[ pos+3 ] = color[3];
+            }else{
+                dstPixels[ pos+3 ] = 0;
+            }
+        }
+    }
+
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Detects linked pixels of an image and creates a 2-d array of blob labels 
+// All pixels that are not part of any blob are labeled 0, while those that are part of the first blob are labeled 1, etc...
+
+function FindBlobs(src) {  //function from http://blog.acipo.com/blob-detection-js/
+// Algorithm: For each pixel
+//     if pixel is visible
+//         if neighbor(s) are labelled
+//             label this pixel the same as it's neighbor
+//         else
+//             create a new label for this pixel
+
+  var xSize = src.width,
+      ySize = src.height,
+      srcPixels = src.data, x, y, pos;
+
+  // This will hold the indices of the regions we find
+  var blobMap = [];
+  var label = 1;
+
+  // The labelTable remembers when blobs of different labels merge
+  // so labelTabel[1] = 2; means that label 1 and 2 are the same blob
+  var labelTable = [0];
+
+  // Start by labeling every pixel as blob 0
+  for( y = 0; y < ySize; y++){
+    blobMap.push([]);
+    for( x = 0; x < xSize; x++){
+      blobMap[y].push(0);
+    }
+  }
+
+  // Temporary variables for neighboring pixels and other stuff
+  var nn, nw, ne, ww, ee, sw, ss, se, minIndex;
+  var luma = 0;
+  var isVisible = 0;
+
+  // We're going to run this algorithm twice
+  // The first time identifies all of the blobs candidates the second pass
+  // merges any blobs that the first pass failed to merge
+  var nIter = 2;
+  while( nIter-- ){
+
+    // We leave a 1 pixel border which is ignored so we do not get array
+    // out of bounds errors
+    for( y = 1; y < ySize - 1; y++){
+      for( x = 1; x < xSize - 1; x++){
+
+        pos = ( y * xSize + x) * 4;
+
+        // We're only looking at the alpha channel in this case but you can
+        // use more complicated heuristics
+        isVisible = (srcPixels[pos + 3] > 127);
+
+        if( isVisible ){
+
+          // Find the lowest blob index nearest this pixel
+          nw = blobMap[y - 1][x - 1] || 0;
+          nn = blobMap[y - 1][x - 0] || 0;
+          ne = blobMap[y - 1][x + 1] || 0;
+          ww = blobMap[y - 0][x - 1] || 0;
+          ee = blobMap[y - 0][x + 1] || 0;
+          sw = blobMap[y + 1][x - 1] || 0;
+          ss = blobMap[y + 1][x - 0] || 0;
+          se = blobMap[y + 1][x + 1] || 0;
+          minIndex = ww;
+          if( 0 < ww && ww < minIndex ){ minIndex = ww; }
+          if( 0 < ee && ee < minIndex ){ minIndex = ee; }
+          if( 0 < nn && nn < minIndex ){ minIndex = nn; }
+          if( 0 < ne && ne < minIndex ){ minIndex = ne; }
+          if( 0 < nw && nw < minIndex ){ minIndex = nw; }
+          if( 0 < ss && ss < minIndex ){ minIndex = ss; }
+          if( 0 < se && se < minIndex ){ minIndex = se; }
+          if( 0 < sw && sw < minIndex ){ minIndex = sw; }
+  
+          // This point starts a new blob -- increase the label count and
+          // and an entry for it in the label table
+          if( minIndex === 0 ){
+            blobMap[y][x] = label;
+            labelTable.push(label);
+            label += 1;
+  
+          // This point is part of an old blob -- update the labels of the
+          // neighboring pixels in the label table so that we know a merge
+          // should occur and mark this pixel with the label.
+          }else{
+            if( minIndex < labelTable[nw] ){ labelTable[nw] = minIndex; }
+            if( minIndex < labelTable[nn] ){ labelTable[nn] = minIndex; }
+            if( minIndex < labelTable[ne] ){ labelTable[ne] = minIndex; }
+            if( minIndex < labelTable[ww] ){ labelTable[ww] = minIndex; }
+            if( minIndex < labelTable[ee] ){ labelTable[ee] = minIndex; }
+            if( minIndex < labelTable[sw] ){ labelTable[sw] = minIndex; }
+            if( minIndex < labelTable[ss] ){ labelTable[ss] = minIndex; }
+            if( minIndex < labelTable[se] ){ labelTable[se] = minIndex; }
+
+            blobMap[y][x] = minIndex;
+          }
+
+        // This pixel isn't visible so we won't mark it as special
+        }else{
+          blobMap[y][x] = 0;
+        }
+  
+      }
+    }
+  
+    // Compress the table of labels so that every location refers to only 1
+    // matching location
+    var i = labelTable.length;
+    while( i-- ){
+      label = labelTable[i];
+      while( label !== labelTable[label] ){
+        label = labelTable[label];
+      }
+      labelTable[i] = label;
+    }
+  
+    // Merge the blobs with multiple labels
+    for(y = 0; y < ySize; y++){
+      for(x = 0; x < xSize; x++){
+        label = blobMap[y][x];
+        if( label === 0 ){ continue; }
+        while( label !== labelTable[label] ){
+          label = labelTable[label];
+        }
+        blobMap[y][x] = label;
+      }
+    }
+  }
+
+  // The blobs may have unusual labels: [1,38,205,316,etc..]
+  // Let's rename them: [1,2,3,4,etc..]
+  var uniqueLabels = unique(labelTable);
+  var i = 0;
+  for( label in uniqueLabels ){
+    labelTable[label] = i++;
+  }
+
+  // convert the blobs to the minimized labels
+  for(y = 0; y < ySize; y++){
+    for(x = 0; x < xSize; x++){
+      label = blobMap[y][x];
+      blobMap[y][x] = labelTable[label];
+    }
+  }
+
+  // Return the blob data:
+
+  console.log(blobMap);
+  return blobMap;
+
+};
+
+/// Returns an object with the counts of unique elements in arr
+
+function unique(arr){
+/// unique([1,2,1,1,1,2,3,4]) === { 1:4, 2:2, 3:1, 4:1 }
+
+    var value, counts = {};
+    var i, l = arr.length;
+    for( i=0; i<l; i+=1) {
+        value = arr[i];
+        if( counts[value] ){
+            counts[value] += 1;
+        }else{
+            counts[value] = 1;
+        }
+    }
+
+    return counts;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//PHYSICSJS
+
+
+
+Physics(function(world){
+var renderer = Physics.renderer('canvas', {
+    el: 'viewport', // id of the canvas element
+    width: 1000,
+    height: 600
+});
+world.add( renderer );
+
+var square = Physics.body('rectangle', {
+    x: 250,
+    y: 250,
+    hidden: false,
+    treatment: 'dynamic',
+    width: 50,
+    height: 50
+});
+world.add( square );
+world.render();
+
+// subscribe to ticker to advance the simulation
+Physics.util.ticker.on(function( time, dt ){
+    world.step( time );
+});
+
+// start the ticker
+Physics.util.ticker.start();
+
+world.on('step', function(){
+    world.render();
+});
+world.add( Physics.behavior('constant-acceleration') );
+var bounds = Physics.aabb(0, 0, 1000, 600);
+
+
+world.add( Physics.behavior('edge-collision-detection', {
+    aabb: bounds,
+    restitution: 0.3
+}) );
+// ensure objects bounce when edge collision is detected
+world.add( Physics.behavior('body-impulse-response') );
+});
+
+</script>
+
+
+
+
+</body>
+</html>

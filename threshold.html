@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<!-- <img id="myImg" src="hand_drawn_circle.png" width="300" height="150" /> -->
+<canvas id="myCanvas" width="1000" height="1000" style="border:1px solid #d3d3d3;"></canvas>
+
+<script>
+
+var imgData;
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+var myImg = new Image();
+var threshold = 130;
+myImg.src = 'hand_drawn_circle.jpg';
+myImg.addEventListener('load', function() {
+    console.log("Loaded");
+    ctx.drawImage(myImg, 0, 0);
+imgData = ctx.getImageData(0, 0, 1000, 1000);
+console.log("My imgData", imgData.data[0]);
+
+copy();
+})
+
+
+// var myImg = document.querySelector("#myImg");
+// console.log(imgData.data);
+
+
+// convert rgb to hsv
+function rgb2hsv (r,g,b) {
+ var computedH = 0;
+ var computedS = 0;
+ var computedV = 0;
+
+ //remove spaces from input RGB values, convert to int
+ var r = parseInt( (''+r).replace(/\s/g,''),10 ); 
+ var g = parseInt( (''+g).replace(/\s/g,''),10 ); 
+ var b = parseInt( (''+b).replace(/\s/g,''),10 ); 
+
+ if ( r==null || g==null || b==null ||
+     isNaN(r) || isNaN(g)|| isNaN(b) ) {
+   alert ('Please enter numeric RGB values!');
+   return;
+ }
+ if (r<0 || g<0 || b<0 || r>255 || g>255 || b>255) {
+   alert ('RGB values must be in the range 0 to 255.');
+   return;
+ }
+ r=r/255; g=g/255; b=b/255;
+ var minRGB = Math.min(r,Math.min(g,b));
+ var maxRGB = Math.max(r,Math.max(g,b));
+
+ // Black-gray-white
+ if (minRGB==maxRGB) {
+  computedV = minRGB;
+  return [0,0,computedV];
+ }
+
+ // Colors other than black-gray-white:
+ var d = (r==minRGB) ? g-b : ((b==minRGB) ? r-g : b-r);
+ var h = (r==minRGB) ? 3 : ((b==minRGB) ? 1 : 5);
+ computedH = 60*(h - d/(maxRGB - minRGB));
+ computedS = (maxRGB - minRGB)/maxRGB;
+ computedV = maxRGB;
+ return [computedH,computedS,computedV];
+}
+
+function getThreshold() {
+
+
+
+// var sumRed = 0;
+// var sumGreen = 0;
+// var sumBlue = 0;
+// var devRed = 0;
+// var devGreen = 0;
+// var devBlue = 0;
+// var averageRed = 0;
+// var averageGreen = 0;
+// var averageBlue = 0;
+
+// var count = 0;
+
+//     // calculating average
+//     for (var i = 0; i < imgData.data.length; i = i + 4) {
+
+//     // extract individual channel values, r=red, g=green, b=blue, a=alpha
+//     sumRed += imgData.data[i];
+//     sumGreen += imgData.data[i + 1];
+//     sumBlue += imgData.data[i + 2];
+//     // a = imgData.data[i + 3];
+//     count++;
+//         }
+
+//     averageRed = sumRed / count;
+//     averageGreen = sumGreen / count;
+//     averageBlue = sumBlue / count;
+
+//     // calculating standard deviation
+
+//     for (var i = 0; i < imgData.data.length; i = i + 4) {
+//         devRed += Math.pow((imgData.data[i] - averageRed), 2);
+//         devGreen += Math.pow((imgData.data[i] - averageGreen), 2);
+//         devBlue += Math.pow((imgData.data[i] - averageBlue), 2);
+//     }
+
+
+}
+
+
+function copy() {
+    // get pixel values
+    // var imgData = ctx.getImageData(0, 0, 300, 150);
+    // console.log(imgData.data);
+    // loop through each individual pixels
+
+    // var data = imgData.data;
+    
+
+    for (var i = 0; i < imgData.data.length; i = i + 4) {
+
+    	// extract individual channel values, r=red, g=green, b=blue, a=alpha
+    	r = imgData.data[i];
+    	g = imgData.data[i + 1];
+    	b = imgData.data[i + 2];
+    	a = imgData.data[i + 3];
+
+        var v = (0.2126*r + 0.7152*g + 0.0722*b <= threshold) ? 255 : 0;
+        imgData.data[i + 3] = v;
+
+     //    var hue = rgb2hsv(r,g,b)[0];
+     //    var saturation = rgb2hsv(r,g,b)[1];
+     //    // console.log(saturation);
+    	// // calculate average of r,g and b values
+    	// // avg = (r + g + b) / 3;
+
+     //    // check whether hue is more than 30%. If yes, keep, if not, change alpha to 0
+     //    // if average value is less than 50% of maximum value, then it is treated as foreground
+     //    if ((hue > 45) && (hue < 300)) {
+     //        // color the foreground as red
+     //        imgData.data[i] = 255;
+     //        imgData.data[i + 1] = 0;
+     //        imgData.data[i + 2] = 0;
+     //        imgData.data[i + 3] = 255;  
+     //    } else {
+     //        // set alpha channel to zero for background
+     //        imgData.data[i + 3] = 0;
+     //    }
+
+    	
+    	// // if average value is less than 50% of maximum value, then it is treated as foreground
+    	// if (hue < 127) {
+    	// 	// color the foreground as red
+    	// 	imgData.data[i] = 255;
+    	// 	imgData.data[i + 1] = 0;
+    	// 	imgData.data[i + 2] = 0;
+    	// 	imgData.data[i + 3] = 255;	
+    	// } else {
+    	// 	// set alpha channel to zero for background
+    	// 	imgData.data[i + 3] = 0;
+    	// }
+    }
+
+
+    ctx.putImageData(imgData, 0, 0);
+}
+
+</script>
+
+
+<br/><button onclick="copy()">Extract</button>
+
+</body>
+</html>

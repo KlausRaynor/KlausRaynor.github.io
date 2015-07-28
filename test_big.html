@@ -1,0 +1,183 @@
+<html>
+ 
+<head>
+    <style>
+    .container {
+        width: calc(2*160px);
+        height: calc(2*160px);
+        background-color: grey;
+    }
+    
+    .cell {
+        font-size: 0.25em;
+    }
+    
+    .container .cell {
+        float: left;
+        width: 40px;
+        height: 40px;
+        background-color: lightblue;
+    }
+    
+    #go {
+        width: 50px;
+        height: 50px;
+        border-radius: calc(50px/2);
+        background-color: green;
+        margin-bottom: 5em;
+    }
+    </style>
+</head>
+ 
+<body>
+    <div id='go'></div>
+    <div class='container'>
+    </div>
+</body>
+<script>
+var numberArray = [159, 121, 18, 49, 168, 218, 63, 139, 84, 114, 106, 81, 146, 110, 65, 200, 188, 159, 123, 9, 102, 142, 148, 202, 105, 113, 10, 6, 6, 46, 39, 239, 239, 25, 67, 75, 16, 247, 22, 48, 124, 15, 27, 74, 185, 100, 208, 147, 60, 226, 208, 77, 233, 146, 202, 213, 16, 108, 0, 119, 77, 185, 229, 224, 159, 121, 18, 49, 168, 218, 63, 139, 84, 114, 106, 81, 146, 110, 65, 200, 188, 159, 123, 9, 102, 142, 148, 202, 105, 113, 10, 6, 6, 46, 39, 239, 239, 25, 67, 75, 16, 247, 22, 48, 124, 15, 27, 74, 185, 100, 208, 147, 60, 226, 208, 77, 233, 146, 202, 213, 16, 108, 0, 119, 77, 185, 229, 224, 159, 121, 18, 49, 168, 218, 63, 139, 84, 114, 106, 81, 146, 110, 65, 200, 188, 159, 123, 9, 102, 142, 148, 202, 105, 113, 10, 6, 6, 46, 39, 239, 239, 25, 67, 75, 16, 247, 22, 48, 124, 15, 27, 74, 185, 100, 208, 147, 60, 226, 208, 77, 233, 146, 202, 213, 16, 108, 0, 119, 77, 185, 229, 224, 159, 121, 18, 49, 168, 218, 63, 139, 84, 114, 106, 81, 146, 110, 65, 200, 188, 159, 123, 9, 102, 142, 148, 202, 105, 113, 10, 6, 6, 46, 39, 239, 239, 25, 67, 75, 16, 247, 22, 48, 124, 15, 27, 74, 185, 100, 208, 147, 60, 226, 208, 77, 233, 146, 202, 213, 16, 108, 0, 119, 77, 185, 229, 224];
+
+
+// Loop through width and height until key cell is reached 
+
+
+var blockSize = 3;
+
+var grid = {
+    width : 8,
+    length : 8
+}
+
+var newArray;
+
+change(grid);
+
+function change(grid) {
+    for (var y = 1; y < grid.length; y += blockSize) {
+        for (var x = 1; x < grid.width; x += blockSize) {
+            newArray = getAverage(getNeighbors(x, y), numberArray)
+            // console.log("x: " + x + ", y: " + y);
+            // x = x + Math.sqrt(grid.width);
+        } 
+        // console.log("x: " + x + ", y: " + y);
+        // y = y + Math.sqrt(grid.length);
+    }
+
+}
+
+// getIndex for the numberArray based on the x and y coordinates of the key cell
+
+function getIndex(x, y) {
+    var index = (y * grid.width + x) * 4;
+    return index;
+}
+
+// getNeighbor(x,y): get indexArray consisting of index values of neighboring cells based on the x and y coordinates of the key cells
+
+function getNeighbors (x, y) {
+    var indexArray = [
+    getIndex(x - 1, y - 1),
+    getIndex(x - 1, y),
+    getIndex(x - 1, y + 1),
+    getIndex(x, y - 1),
+    getIndex(x, y),
+    getIndex(x, y + 1), 
+    getIndex(x + 1, y - 1),
+    getIndex(x + 1, y),
+    getIndex(x + 1, y + 1)
+    ]
+
+    return indexArray;
+}
+
+    // getAverage(x,y) for the coordinates of the key cell
+
+function getAverage(indexArray, numberArray) {
+    var sumRed = 0;
+    var sumGreen = 0;
+    var sumBlue = 0;
+    var sumAlpha = 0;
+    var averageRed = 0;
+    var averageGreen = 0;
+    var averageBlue = 0;
+    var averageAlpha = 0;
+    var count = 0;
+
+    indexArray.forEach(function(n,i) {
+        for ( var j = 0; j < numberArray.length; j++ ) {
+            if (j == indexArray[i]) {
+                sumRed += numberArray[j];
+                sumGreen += numberArray[j + 1];
+                sumBlue += numberArray[j + 2];
+                // sumAlpha += numberArray[j + 3];
+                count++;
+                // console.log("j" + " is " + j + ", while indexArray[i] is " + indexArray[i]);
+            }
+        }
+        // console.log(sum + " " + count);
+    })
+
+    // for (var i = 0; i < numberArray.length; i++) {
+
+    //  sum += numberArray[indexArray];
+    //  console.log(numberArray);
+    // }
+    averageRed = Math.floor(sumRed / indexArray.length);
+    averageGreen = Math.floor(sumGreen / indexArray.length);
+    averageBlue = Math.floor(sumBlue / indexArray.length);
+    // averageAlpha = sumAlpha / indexArray.length;
+
+    indexArray.forEach(function(n,i) {
+        for ( var j = 0; j < numberArray.length; j++ ) {
+            if (j == indexArray[i]) {
+                numberArray[j] = averageRed;
+                numberArray[j + 1] = averageGreen; 
+                numberArray[j + 2] = averageBlue;               
+                console.log("j is " + j + " while, averageRed is " + averageRed);
+            }
+        }       
+
+    })
+    // for (var j = 0; j < indexArray.length; j++) {
+    //  numberArray[indexArray] = average;
+    // }
+
+    return numberArray;
+}
+
+
+
+
+// Create HTML Elements and include color information
+
+for (var i = 0; i < numberArray.length; i += 4) {
+    var container = document.querySelector('.container');
+    var cell = document.createElement('div');
+    cell.classList.add('cell');
+    cell.innerHTML = [
+        "R" + numberArray[i],
+        "G" + numberArray[i + 1],
+        "B" + numberArray[i + 2],
+        "A" + numberArray[i + 3]
+    ].join('<br>');
+
+    cell.style.backgroundColor = [
+        'rgba(' + numberArray[i],
+        numberArray[i + 1],
+        numberArray[i + 2],
+        numberArray[i + 3] + ')'
+    ].join(',');
+    container.appendChild(cell);
+}
+
+var go = document.getElementById('go');
+go.addEventListener('click', function(e) {
+    var cells = Array.prototype.slice.call(document.querySelectorAll('.cell'));
+    cells.forEach(function(c) {
+        // Try adding some logic here which replaces each cell's backgroundColor with the _average_ of its neighbors' background colors
+        // c.style.backgroundColor = 'red';
+    })
+});
+</script>
+ 
+</html>

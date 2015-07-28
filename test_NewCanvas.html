@@ -1,0 +1,100 @@
+<html>
+<meta charset="utf-8">
+
+<head>
+    <style>
+    /*This is where you can put your CSS*/
+    </style>
+</head>
+
+<body>
+    <!-- This is where you can put your HTML -->
+    <canvas width='150' height='150' id='canvas'>
+        <!-- Note that we set the width and height as attributes, not in CSS.  This is because of the weird behavior of canvas.  You can read more at http://stackoverflow.com/questions/2588181/canvas-is-stretched-when-using-css-but-normal-with-width-height-properties -->
+    </canvas>
+
+    <script>
+    // This is where you can put your JavaScript
+    window.addEventListener('load', function() { // When the window loads, do this stuff
+        var canvas = document.getElementById('canvas'); // Grab the canvas
+        if (canvas.getContext) { // if we can draw in it
+            var ctx = canvas.getContext('2d'); // get a handle on the drawing functions
+            // Start drawing the path; see https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes for more
+            ctx.fillStyle = "red";
+            ctx.fillRect(0,0,100,100);
+
+            var img = document.createElement("img");
+
+            ctx.drawImage(img, 0, 0);
+            var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            // invert colors
+            var i;
+            var blockSide = 3;
+            for (i = 0; i < imgData.data.length; i += 4) {
+            imgData.data[i] = 255 - imgData.data[i];    // r value
+            imgData.data[i+1] = 255 - imgData.data[i+1]; // g value
+            imgData.data[i+2] = 255 - imgData.data[i+2];    // b value
+            imgData.data[i+3] = 255;
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            // Go through the destination image pixels
+            for ( var y = 0; y < canvas.height; y++ ) {
+
+                for ( var x = 0; x < canvas.width; x++) {
+                    var sy = y; 
+                    var sx = x; 
+                    // var dstOff = (y*w + x) * 4;
+
+                    imageData.data[x] = getAverage.r;
+                    imageData.data[x + 1] = getAverage.g;
+                    imageData.data[x + 2] = getAverage.b;
+                    // Calculate the weighted sum of the source image pixels
+
+                }
+            }
+
+            function getAverage(imgData) {
+                var rgb = { r: 0, g: 0, b: 0 }; // Set a base colour as a fallback for non-compliant browsers
+                var count = 0;
+                for ( var j = 0; j < canvas.height; j++ ) {
+                    for ( var k = 0; k < canvas.width; k++ ) {
+                        count++;
+                        if ( count < blockSide ) {
+                            rgb.r += imgData.data[i];
+                            rgb.g += imgData.data[i + 1];
+                            rgb.b += imgData.data[i + 2];
+                        } else {
+                            rgb.r = Math.floor(rgb.r / Math.pow(blockSide,2));
+                            rgb.g = Math.floor(rgb.g / Math.pow(blockSide,2));
+                            rgb.b = Math.floor(rgb.b / Math.pow(blockSide,2)); 
+                        }
+                        return rgb;
+                    }
+                }
+
+            }
+
+            // var img = document.createElement("img");
+            // img.src = canvas.toDataURL("image/png");
+            // document.body.appendChild(img);            
+
+            // ctx.beginPath();
+            // ctx.arc(75, 75, 50, 0, Math.PI * 2, true); // Outer circle
+            // ctx.moveTo(110, 75);
+            // ctx.arc(75, 75, 35, 0, Math.PI, false); // Mouth (clockwise)
+            
+            // ctx.moveTo(65, 65);
+            // ctx.arc(60, 65, 5, 0, Math.PI * 2, true); // Left eye
+            
+            // ctx.moveTo(95, 65);
+            // ctx.arc(90, 65, 5, 0, Math.PI * 2, true); // Right eye
+            
+            // ctx.stroke(); // Actually render what we've traced
+            // ctx.closePath();
+        }
+    });
+    </script>
+</body>
+
+</html>

@@ -7,9 +7,8 @@
   var streaming = false,
       video        = document.querySelector('#video'),
       canvas       = document.querySelector('#canvas'),
-      canvas2      = document.querySelector('#canvas2'),
       startbutton  = document.querySelector('#startbutton'),
-      width = 336,
+      width = 350,
       height = 0;
 
   navigator.getMedia = ( navigator.getUserMedia ||
@@ -51,12 +50,10 @@
     canvas.width = width;
     canvas.height = height;
     canvas.getContext('2d').drawImage(video, 0, 0, width, height);
-    canvas2.width = width;
-    canvas2.height = height;
+    var data = canvas.toDataURL('image/png');
   }
 
   startbutton.addEventListener('click', function(ev){
-    console.log('capture clicked!');
       takepicture();
     ev.preventDefault();
   }, false);
@@ -65,161 +62,164 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// logic for averaging out the color of image taken with the camera
-//loop iterates from y = 1 by adding the square root of the block size.
-//loop iterates from x = 1 by adding the square root of the block size.
+// Loop through the code to get each nth pixel based on x and y coordinates 
+  // Iterate from x = 1 by adding the square root of the blockSize
+  // Iterate from y = 1 by adding the square root of the blockSize
 
-//initializing DOM elements
-var pixelateBtn  = document.querySelector('#pixelate');
-var canvas       = document.querySelector('#canvas');
-var canvas2      = document.querySelector('#canvas2');
-var ctx          = canvas.getContext('2d');
-var ctx2         = canvas2.getContext('2d');
-
- //////////////////////////////////////////////////////
-
- var blockSize   = 9;  //change if we want more pixelation.
- var width       = 336; //hard coding these two numbers!
- var height      = 252; //hard coding these two numbers!
- var r           = 1; //radius around home pixel!
- var imageData;              //found in pixelate()
- var data;                   //found in pixelate()
- var neighborhoodIndexArray; //found in pixelate()
- var rgbAverageArray;        //found in pixelate()
- var genericCounter = 0;     //our final pixelated image should be a 84 x 112 'pixelated' image.  This means 
-                             //we run through the for loops 9,408 times.
+// stop at a pixel of choice
+// call getNeighborhood for the full set of pixels
+// call getXY for each pixel
+// get average for the set of pixels
 
 
-//when pixelate is clicked, run this
-function pixelate() {
+var imageData=ctx.getImageData(0 , 0, canvasObj.width, canvasObj.height);
 
- imageData   = ctx.getImageData(0, 0, canvas.width, canvas.height); //must define imageData and data var
- data        = imageData.data;                                      // within pixelate function to grab data...
-  for(var y = 1; y < height; y+=Math.sqrt(blockSize)) {
-    for(var x = 1; x < width; x+=Math.sqrt(blockSize)){
+// If the data is a 4 x 4 grid
+var x = 1, y = 1;
+do {
+  do {
+      
 
-          neighborhoodIndexArray = getIndexes(getNeighborhood(x,y,r));
-          rgbAverageArray = getAverage(neighborhoodIndexArray, data);
+  } while (x < width);
 
-          neighborhoodIndexArray.forEach(function(value) { 
-           data[value] = rgbAverageArray[0];
-           data[value + 1] = rgbAverageArray[1];
-           data[value + 2] = rgbAverageArray[2];  
-          });
-          neighborhoodIndexArray.splice(0, neighborhoodIndexArray.length);
-          rgbAverageArray.splice(0, rgbAverageArray.length);  //resent rgbAverageArray to size 0
-    } //end for x
-  } //end for y
-} //end pixelate()
+y++;
+} while (y < length);
 
 
-//eventListener for pixelate function/button
-//this writes the new image!!
-pixelateBtn.addEventListener('click', function() {
-  console.log('pixelate clicked!');
-pixelate();
-ctx2.putImageData(imageData, 0, 0);
-});
 
+// Provides the value at the index number of the array, based on the x and y coordinates
+function getXY(array, x, y) {
 
-//functions for stuff!! ! AGGHGHHHHH
+  var i = x * width + y;
 
-//this function finds and reports the coordinates around a central pixel coordinate.
-function getNeighborhood(x, y, r) {
-
-  var neighborArray = [];
-  neighborArray[0] = x - r;
-  neighborArray[1] = y - r;
-
-  neighborArray[2] = x;
-  neighborArray[3] = y - r;
-
-  neighborArray[4] = x + r;
-  neighborArray[5] = y - r;
-
-  neighborArray[6] = x - r;
-  neighborArray[7] = y;
-
-  neighborArray[8] = x; //center
-  neighborArray[9] = y; //center
-
-  neighborArray[10] = x + r;
-  neighborArray[11] = y;
-
-  neighborArray[12] = x - r;
-  neighborArray[13] = y + r;
-
-  neighborArray[14] = x;
-  neighborArray[15] = y + r;
-
-  neighborArray[16] = x + r;
-  neighborArray[17] = y + r;
-
-  //return array of length 18 mapped to 9 pixel coordinates.
-  return neighborArray;
+return index; // returns index of data array
 }
 
+// Provides the x and y coordinates of neigboring cells
+function getNeighbourhood(x, y, r) {
 
-  var indexArray = []; 
-  var printArray = [];
-   var q= 1;
-//this function gets 36 indexes from our 9 coordinate (18 length) neighborhood
+// getting the adjacent pixels (by subtracting and adding x and y values by 1)
 
-
-function getIndexes(nArray) {  //argument is neighborArray from getNeighbor()
-    indexArray.splice(0, indexArray.length);
-    printArray.splice(0, printArray.length); //remove all elements from both arrays and reduce length to 0
-  var j = 0; 
- 
-
-  for(var z = 0; z < nArray.length; z+=2) { 
-     //formula converting coordinates to index.  
-     //Takes y coord * height + x coord
-     //calculates for all 4 values!! Remember??
-        indexArray[j] = ((nArray[z + 1] * height * 4) + (nArray[z] * 4));
-        indexArray[j + 1] = (((nArray[z + 1] * height * 4) + (nArray[z] * 4)) + 1);
-        indexArray[j + 2] = (((nArray[z + 1] * height * 4) + (nArray[z] * 4)) + 2);
-        indexArray[j + 3] = (((nArray[z + 1] * height * 4) + (nArray[z] * 4)) + 3);
-      j+=4;
-    }
-  j = 0; //reset indexArray counter (maybe unnecessary?)
-  printArray = indexArray;
-  if(q < 100){
-  console.log(printArray);
-  q++;
-  }
-  return printArray;
-  //return array of 36 indexes 
+return xy;
 }
 
+// Calculates the average rgb value for a set of pixels
+function getAverage(i, data) {
 
-function getAverage(iArray, dataArray) {
-
-  var red = 0;
-  var green = 0;
-  var blue = 0;
-  var averagedArray = [];
-  var length = iArray.length;
-  //console.log(indexArray);
-  for(var i = 0; i < length; i++){
-    red += dataArray[iArray[i]];
-    blue += dataArray[iArray[i] + 1];
-    green += dataArray[iArray[i] + 2];
-    iArray.splice(i, 1);
-    iArray.splice(i, 1);
-    iArray.splice(i, 1);
-    iArray.splice(i, 1);  //iteratively remove all elements from indexArray as they are added to rgb
 }
 
-    red   /= length;  //assigning averages to each value.
-    blue  /=  length;
-    green /= length;
+// // Retrieve the image pixels:
 
-    var k = 0;
-    averagedArray[k] = Math.floor(red);
-    averagedArray[k + 1] = Math.floor(blue);
-    averagedArray[k + 2] = Math.floor(green);
-    //averagedArray[k + 3] = 255; //alpha
-    return averagedArray;
-    //returns averaged RGB values for given indexes as an array of length 4.
-}
+// Filters = {};
+// Filters.getPixels = function(img) {
+//   var c = this.getCanvas(img.width, img.height);
+//   var ctx = c.getContext('2d');
+//   ctx.drawImage(img);
+//   return ctx.getImageData(0,0,c.width,c.height);
+// };
+
+// Filters.getCanvas = function(w,h) {
+//   var c = document.createElement('canvas');
+//   c.width = w;
+//   c.height = h;
+//   return c;
+// };
+
+// // A filterImage method that takes a filter and an image and returns the filtered pixels
+
+// Filters.filterImage = function(filter, image, var_args) {
+//   var args = [this.getPixels(image)];
+//   for (var i=2; i<arguments.length; i++) {
+//     args.push(arguments[i]);
+//   }
+//   return filter.apply(null, args);
+// };
+
+
+// // filter of thresholding the image
+
+// Filters.threshold = function(pixels, threshold) {
+//   var d = pixels.data;
+//   for (var i=0; i<d.length; i+=4) {
+//     var r = d[i];
+//     var g = d[i+1];
+//     var b = d[i+2];
+//     var v = (0.2126*r + 0.7152*g + 0.0722*b >= threshold) ? 255 : 0;
+//     d[i] = d[i+1] = d[i+2] = v
+//   }
+//   return pixels;
+};
+
+// // logic for averaging out the color of image taken with the camera
+
+// var canvasObj = document.getElementById('canvas');
+// var ctx=canvasObj.getContext("2d");
+
+// function reDraw(canvasObj) {
+
+// var rgb = { r: 0, g: 0, b: 0 }; // Set a base colour as a fallback for non-compliant browsers
+
+// ctx.drawImage(img, 0, 0);
+
+// ctx.putImageData(imgData,0,0);
+
+// }
+
+// // Define a new context for the output
+
+// var canvas2Obj = document.getElementById('canvas2');
+// var tmpCtx=canvas2Obj.getContext("2d");
+
+// function createImageData(w,h) {
+//   return this.tmpCtx.createImageData(w,h);
+// };
+
+// function drawAverage (canvas2Obj) {
+
+// var rgb = { r: 0, g: 0, b: 0 }; // Set a base colour as a fallback for non-compliant browsers
+
+// var imageData=ctx.getImageData(0 , 0, canvasObj.width, canvasObj.height);
+// var pixelCluster = 9;
+// var count = 0;
+// var output = createImageData(canvasObj.width, canvasObj.height);
+// var dst = output.data;
+
+
+// // Go through the destination image pixels
+
+//   for (var y = 0; y < imageData.length; y++) {
+//     var sy = y
+//     var dstOff = y * 4;
+//     // average out colors of every 9 pixels
+//     for (var i = 0; i < imgData.data.length; i += 4) {
+//           count++;
+//           rgb.r += imgData.data[i];
+//           rgb.g += imgData.data[i + 1];
+//           rgb.b += imgData.data[i + 2];
+
+//         // if count is a multiple of 9, or every 9 pixels
+//           if ((count % pixelCluster) == 0) {
+//             // floor the average values to give correct rgb values (ie: round number values)
+//             rgb.r = Math.floor(rgb.r / pixelCluster);
+//             rgb.g = Math.floor(rgb.g / pixelCluster);
+//             rgb.b = Math.floor(rgb.b / pixelCluster);        
+//           }
+          
+//       }
+
+//       dst[dstOff] = rgb.r; // r
+//       dst[dstOff + 1] = rgb.g; // g
+//       dst[dstOff + 2] = rgb.b; // b
+//       // imgData.data[i+3] = 255;
+
+//   }
+
+//   tmpCtx.putImageData(imageData,0,0);
+
+// }
+
+// //activates the mean color filter ability 
+// filterbutton = document.querySelector('#filterbutton');
+// filterbutton.addEventListener('click', function() {
+//     window.location.href = '#' + drawAverage(canvas2Obj);
+// });

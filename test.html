@@ -1,0 +1,187 @@
+<html>
+ 
+<head>
+<style>
+.container {
+	width: 160px;
+	height: 160px;
+	background-color: grey;
+}
+.container .cell {
+	float: left;
+	width: 40px;
+	height: 40px;
+	background-color: lightblue;
+}
+#go {
+	width: 50px;
+	height: 50px;
+	border-radius: calc(50px/2);
+	background-color: green;
+	margin-bottom: 5em;
+}
+</style>
+</head>
+<body>
+<div id='go'></div>
+<div class='container'>
+</div>
+</body>
+<script>
+var numberArray = [
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+]
+
+// Loop through width and height until key cell is reached 
+
+var x = 1, y = 1;
+var blockSize = 2;
+
+var grid = {
+	width : 4,
+	length : 4
+}
+
+var newArray;
+
+change(grid);
+
+function change(grid) {
+	for (y = 1; y < grid.length; y += Math.sqrt(grid.length)) {
+		for (x = 1; x < grid.width; x += Math.sqrt(grid.width)) {
+			newArray = getAverage(getNeighbors(x, y), numberArray)
+			console.log("x: " + x + ", y: " + y);
+			// x = x + Math.sqrt(grid.width);
+		} 
+		// console.log("x: " + x + ", y: " + y);
+		// y = y + Math.sqrt(grid.length);
+	}
+
+}
+
+// get the x,y coordinates for a given pixel index when provided with the width of the image
+
+function getXY(i, imageWidth) {
+	var y = Math.floor(i / imageWidth);
+	var x = i - imageWidth * y;
+
+	return x, y;
+}
+
+// getIndex for the numberArray based on the x and y coordinates of the key cell
+
+function getIndex(x, y) {
+	var index = y * grid.width + x;
+	return index;
+}
+
+// getNeighbor(x,y): get indexArray consisting of index values of neighboring cells based on the x and y coordinates of the key cells
+
+function getNeighbors (x, y) {
+	var indexArray = [
+	getIndex(x, y),
+	getIndex(x - 1, y),
+	getIndex(x, y - 1),
+	getIndex(x - 1, y - 1)
+	]
+
+	return indexArray;
+}
+
+	// getAverage(x,y) for the coordinates of the key cell
+
+function getAverage(indexArray, numberArray) {
+	var sum = 0;
+	var average = 0;
+	var count = 0;
+
+	indexArray.forEach(function(n,i) {
+		for ( var j = 0; j < numberArray.length; j++ ) {
+			if (j == indexArray[i]) {
+				sum += numberArray[j];
+				count++;
+				// console.log("j" + " is " + j + ", while indexArray[i] is " + indexArray[i]);
+			}
+		}
+		// console.log(sum + " " + count);
+	})
+
+	// for (var i = 0; i < numberArray.length; i++) {
+
+	// 	sum += numberArray[indexArray];
+	// 	console.log(numberArray);
+	// }
+	average = sum / indexArray.length;
+
+	indexArray.forEach(function(n,i) {
+		for ( var j = 0; j < numberArray.length; j++ ) {
+			if (j == indexArray[i]) {
+				numberArray[j] = average;
+			}
+		}		
+
+	})
+	// for (var j = 0; j < indexArray.length; j++) {
+	// 	numberArray[indexArray] = average;
+	// }
+
+	return numberArray;
+}
+
+  // startbutton.addEventListener('click', function(ev){
+  //     change();
+  //   ev.preventDefault();
+  // }, false);
+
+
+// // Grab the value for each coordinate 
+
+
+// var total = 0;
+// var count = 0;
+// var blockSize = 5;
+
+// numberArray.forEach(function(n,i) {
+// 	total += numberArray[i];
+// 	count++;
+// 	console.log(total + " " + count);
+// })
+
+// var average = total / count;
+// console.log(average);
+
+// Populate the cells of the grid
+newArray.forEach(function(n, i) {
+	var container = document.querySelector('.container');
+	var cell = document.createElement('div');
+	cell.classList.add('cell');
+	cell.innerHTML = newArray[i];
+	container.appendChild(cell);
+});
+
+// var go = document.getElementById('go');
+// go.addEventListener('click', function(e) {
+// 	var cells = Array.prototype.slice.call(document.querySelectorAll('.cell'));
+// 	cells.forEach(function(c) {
+// 		c.style.backgroundColor = 'red';
+// 	})
+// });
+</script>
+<button id="startbutton">getAverage</button>
+
+</html>

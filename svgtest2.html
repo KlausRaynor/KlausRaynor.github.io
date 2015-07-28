@@ -1,0 +1,22 @@
+<html>
+
+<body>
+    <svg id='svg'></svg>
+    <script src='js/snap.svg-min.js'></script>
+    <script>
+    var width = 800;
+    var height = width;
+    var s = Snap(width, height);
+    var points = [];
+    for (var i = 0; i < 100; i++) {
+    	var x = Math.random()*width;
+    	var y = Math.random()*height;
+    	points.push(x);
+    	points.push(y);
+    }
+    console.log(points);
+    s.polyline(points);
+    </script>
+</body>
+
+</html>
