@@ -10,6 +10,8 @@
   <script type="text/javascript" src="js/drawSVG.js"></script>
   <script type="text/javascript" src="js/FindBlob.js"></script>
   <script type='text/javascript' src='js/pixi.js'></script> 
+
+  <link href='css/style.css' rel='stylesheet'>
 </head>
 
 <body>
@@ -17,7 +19,7 @@
 
 <canvas id='viewport' style='border:1px solid #AAA;'></canvas> <button id='addbutton'>Add</button>
 <canvas id='playground' style='border:1px solid #aaa;margin: 0 auto;display: block;'></canvas><br>
-<button id='restartbutton'>Clear</button>
+<button id='restartbutton'>Restart</button>
 
 
 <!-- Hidden canvas that contains imagedata that is passed onto 'viewport' canvas -->
@@ -44,6 +46,8 @@ var threshold = 70;
     var viewHeight = 600;
     var viewWidth = 800;
 
+
+  doodleWorld();
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // connects built-in camera and reads output to take still picture
@@ -58,7 +62,7 @@ var threshold = 70;
       restartbutton= document.querySelector('#restartbutton'),
       width = 336,
       height = 0;
-
+      doodleWorld();
   navigator.getMedia = ( navigator.getUserMedia ||
                          navigator.webkitGetUserMedia ||
                          navigator.mozGetUserMedia ||
@@ -67,7 +71,7 @@ var threshold = 70;
   navigator.getMedia(
     {
       video: true,
-      audio: false
+      audio: false,
     },
     function(stream) {
       if (navigator.mozGetUserMedia) {
@@ -149,6 +153,7 @@ var threshold = 70;
     console.log('past doodleworld call');
 
   });
+  //doodleworld call outside of add button
 
 })();
 
@@ -189,7 +194,11 @@ console.log(num + ' =num');
     });
     world.add(renderer);
 
-    
+    //Group user-made polygons into group compound
+      var userObjects = Physics.body('compound', {
+        //no params needed 
+      });
+   if(verts) {
     polygon[num] = Physics.body('convex-polygon', {
         x: 750,
         y: 10,
@@ -197,12 +206,14 @@ console.log(num + ' =num');
       vertices: verts
         
     });
-    polygon[num].mass = 5;
-    world.add( polygon );
+    polygon[num].mass = 10;
+    userObjects.addChild(polygon[num]);
+    world.add( polygon[num] );
     world.render();
-
+  }
     //Add props to world
     //first 5 #'s are left column
+    //next 5 #'s are right column
     //#1
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -213,6 +224,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#2
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -223,6 +235,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#3
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -233,6 +246,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#4
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -243,6 +257,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#5
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -253,6 +268,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#6
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -263,6 +279,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#7
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -273,6 +290,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#8
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -283,6 +301,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#9
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -293,6 +312,7 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //#10
     var square = Physics.body('rectangle', {
         name: 'box',
@@ -303,8 +323,9 @@ console.log(num + ' =num');
         height: 50
     });
     world.add( square );
+    square.mass = 0.01;
     //wall
-    var square = Physics.body('rectangle', {
+    var wall = Physics.body('rectangle', {
       name: 'wall',
       x: 350,
       y:500,
@@ -313,7 +334,7 @@ console.log(num + ' =num');
       width: 10,
       height: 250
     });
-    world.add( square );
+    world.add( wall );
 
     //fulcrum
     world.add( Physics.body('convex-polygon', {
@@ -330,7 +351,7 @@ console.log(num + ' =num');
         ]
     }) );
 
-    var square = Physics.body('rectangle', {
+    var lever = Physics.body('rectangle', {
         name: 'lever',
         x: 600,
         y: 580,
@@ -338,15 +359,16 @@ console.log(num + ' =num');
         width: 350,
         height: 10
     });
-    world.add( square );
+    world.add( lever );
+    lever.mass = 0.5;
 
-    //ammo
+    //AMMO
     var ammo = Physics.body('rectangle', {
       name: 'ammo',
       x: 490,
       y:550,
-      width: 10,
-      height: 10,
+      width: 20,
+      height: 20,
     });
     world.add( ammo );
     ammo.mass = 0.05;
@@ -354,29 +376,32 @@ console.log(num + ' =num');
       name: 'ammo',
       x: 510,
       y:550,
-      width: 10,
-      height: 10,
+      width: 20,
+      height: 20,
     });
     world.add( ammo );
-
+    ammo.mass = 0.5;
         var ammo = Physics.body('rectangle', {
       name: 'ammo',
       x: 500,
       y:540,
-      width: 10,
-      height: 10,
+      width: 20,
+      height: 20,
     });
     world.add( ammo );
+    ammo.mass = 0.5;
         var ammo = Physics.body('rectangle', {
       name: 'ammo',
       x: 510,
       y:540,
-      width: 10,
-      height: 10,
+      width: 20,
+      height: 20,
     });
     world.add( ammo );
     ammo.mass = 0.5;
 //end props
+
+
     // subscribe to ticker to advance the simulation
     Physics.util.ticker.on(function( time, dt ){
         world.step( time );
@@ -404,6 +429,7 @@ console.log(num + ' =num');
     //////////// RESTARTBUTTON
     restartbutton.addEventListener('click', function() {
       for(var i = 0; i < polygon.length; i++){
+        userObjects.clear();
         world.remove(polygon[i]);
       }
       //reset index variable
