@@ -17,13 +17,13 @@
 <body>
 <video id='video' style='display:inline-block;'></video><button id='startbutton'>Capture</button>
 
-<canvas id='viewport' style='border:1px solid #AAA;'></canvas> <button id='addbutton'>Add</button>
-<canvas id='playground' style='border:1px solid #aaa;margin: 0 auto;display: block;'></canvas><br>
-<button id='restartbutton'>Restart</button>
+<canvas id='viewport'></canvas> <button id='addbutton'>Add</button><br>
+<canvas id='playground' margin:' 0 auto';display: 'block';></canvas><br>
+<!-- <button id='restartbutton'>Restart</button> -->
 
 
 <!-- Hidden canvas that contains imagedata that is passed onto 'viewport' canvas -->
-<canvas id="myCanvas" style="border:1px solid #aaa;"></canvas> 
+<canvas id="myCanvas"></canvas> 
 <script>
 //vars
 var imgData;
@@ -35,14 +35,13 @@ var scale = 2;
 var polygonNum = 0; //index of polygon array
 var c = document.getElementById("myCanvas");
 c.style = 'display:none;';
-restartbutton.style = 'position:fixed; top: 50px; right:50px';
+//restartbutton.style = 'position:fixed; top: 50px; right:50px';
 var ctx = c.getContext("2d");
 var playground = document.querySelector('#playground');
+ document.querySelector('#playground').height = 600;
 var pctx = playground.getContext('2d');
 //var myImg = new Image();
 var threshold = 70;
-   playground.height = 600;
-   playground.width = 800;  
     var viewHeight = 600;
     var viewWidth = 800;
 
@@ -206,7 +205,7 @@ console.log(num + ' =num');
       vertices: verts
         
     });
-    polygon[num].mass = 10;
+    polygon[num].mass = 5;
     userObjects.addChild(polygon[num]);
     world.add( polygon[num] );
     world.render();
@@ -360,7 +359,6 @@ console.log(num + ' =num');
         height: 10
     });
     world.add( lever );
-    lever.mass = 0.5;
 
     //AMMO
     var ammo = Physics.body('rectangle', {
@@ -427,18 +425,18 @@ console.log(num + ' =num');
     world.add( Physics.behavior('sweep-prune') );
 
     //////////// RESTARTBUTTON
-    restartbutton.addEventListener('click', function() {
-      for(var i = 0; i < polygon.length; i++){
-        userObjects.clear();
-        world.remove(polygon[i]);
-      }
-      //reset index variable
-      polygonNum = 0;
-      polygon.splice(0, polygon.length);
-      console.log(polygon);
-      console.log('num =' + num);
-      console.log('cleared!');
-    });
+    // restartbutton.addEventListener('click', function() {
+    //   for(var i = 0; i < polygon.length; i++){
+    //     userObjects.clear();
+    //     world.remove(polygon[i]);
+    //   }
+    //   //reset index variable
+    //   polygonNum = 0;
+    //   polygon.splice(0, polygon.length);
+    //   console.log(polygon);
+    //   console.log('num =' + num);
+    //   console.log('cleared!');
+    // });
 
   });
 

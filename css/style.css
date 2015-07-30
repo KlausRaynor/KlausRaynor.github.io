@@ -114,3 +114,23 @@
 	position:relative;
 	top:1px;
 }
+
+#viewport, #playground, #myCanvas {
+	background-color: #49ABE6;
+	
+}
+
+#playground {
+	border-radius: 10px;
+	margin-left: 20%;
+}
+
+#video {
+	margin-left: 40%;
+	border: 5px solid #49ABE6;
+}
+
+#video, #viewport {
+	width: 100px;
+	height: auto;
+}
