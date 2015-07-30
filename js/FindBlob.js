@@ -143,8 +143,6 @@ function FindBlobs(src) {  //function taken from http://blog.acipo.com/blob-dete
   }
 
   // Return the blob data:
-
-  // console.log(blobMap);
   return blobMap;
 
 };
@@ -199,6 +197,6 @@ function createBlobObject(dst, blobs, colors) {
                 dstPixels[ pos+3 ] = 0;
             }
         }
-    }
-
+    } 
+    
 }

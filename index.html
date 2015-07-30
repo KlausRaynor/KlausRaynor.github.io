@@ -8,31 +8,41 @@
   <script type="text/javascript" src="js/snap.svg-min.js"></script>
   <script type="text/javascript" src="js/convexHull.js"></script>
   <script type="text/javascript" src="js/drawSVG.js"></script>
-  <script type="text/javascript" src="js/FindBlob.js"></script> 
+  <script type="text/javascript" src="js/FindBlob.js"></script>
+  <script type='text/javascript' src='js/pixi.js'></script> 
 </head>
 
 <body>
 <video id='video' style='display:inline-block;'></video><button id='startbutton'>Capture</button>
-<canvas id="myCanvas" style="border:1px solid #aaa;"></canvas> 
-<canvas id='viewport' style='border:1px solid #AAA;'></canvas><br>
-<canvas id='playground' style='border:1px solid #aaa'></canvas>
 
+<canvas id='viewport' style='border:1px solid #AAA;'></canvas> <button id='addbutton'>Add</button>
+<canvas id='playground' style='border:1px solid #aaa;margin: 0 auto;display: block;'></canvas><br>
+<button id='restartbutton'>Clear</button>
+
+
+<!-- Hidden canvas that contains imagedata that is passed onto 'viewport' canvas -->
+<canvas id="myCanvas" style="border:1px solid #aaa;"></canvas> 
 <script>
 //vars
 var imgData;
 var newImgData;
 var labelMap;
 var poly;
+var polygon = [];  //image drawn into playground
 var scale = 2;
+var polygonNum = 0; //index of polygon array
 var c = document.getElementById("myCanvas");
+c.style = 'display:none;';
+restartbutton.style = 'position:fixed; top: 50px; right:50px';
 var ctx = c.getContext("2d");
 var playground = document.querySelector('#playground');
 var pctx = playground.getContext('2d');
 //var myImg = new Image();
 var threshold = 70;
-playground.width = 600;
-playground.height = 600;
-
+   playground.height = 600;
+   playground.width = 800;  
+    var viewHeight = 600;
+    var viewWidth = 800;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +54,8 @@ playground.height = 600;
       video        = document.querySelector('#video'),
       canvas       = document.querySelector('#myCanvas'),
       startbutton  = document.querySelector('#startbutton'),
+      addbutton    = document.querySelector('#addbutton'),
+      restartbutton= document.querySelector('#restartbutton'),
       width = 336,
       height = 0;
 
@@ -88,6 +100,7 @@ playground.height = 600;
     canvas.getContext('2d').drawImage(video, 0, 0, width, height);
   }
 
+//////////// STARTBUTTON
   startbutton.addEventListener('click', function(ev){
     console.log('capture clicked!');
       takepicture();
@@ -109,9 +122,13 @@ playground.height = 600;
 
     // Drawing the polyline
     poly = convexHull(labelMap);
-
+   
     drawSVG(poly, height, width);  
 
+  }, false); //
+
+//////////// ADDBUTTON
+  addbutton.addEventListener('click', function() {
     //get convex hull to pass to physics
     var cHull = new ConvexHullGrahamScan();
         for(var i = 0; i < labelMap.length; i++) {
@@ -123,71 +140,20 @@ playground.height = 600;
     } 
     //pass vertices to physics
     var vertices = cHull.getHull();
-    doodleWorld(vertices);
+
+    doodleWorld(vertices, polygonNum);
+    polygonNum++;
+
+    playground.height = 600;
+    playground.width = 800;
     console.log('past doodleworld call');
 
-
-
-
-  }, false);
+  });
 
 })();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-// myImg.onload = CreateDelegate(myImg, imgTesting_onload);
-// myImg.src =  "img/crescent_moon.png";
-
-// This method of calling the onload prevents the "cross origin" error
-// function CreateDelegate(contextObject, delegateMethod)
-// {
-//     return function()
-//     {
-//         return delegateMethod.apply(contextObject, arguments);
-//     }
-// }
-
-// function imgTesting_onload() {
-//   var MAX_WIDTH = myImg.width;
-//   var MAX_HEIGHT = myImg.height;
-
-//   //scales img drawn by percent
-//   var width = MAX_WIDTH / scale;
-//   var height = MAX_HEIGHT / scale;
-
-//     // creating a context and drawing the image on canvas
-//     c.width = width;
-//     c.height = height;
-//     var ctx = c.getContext("2d");
-//     ctx.drawImage(myImg, 0, 0, width, height);
- 
-//     // extracting image data
-//     imgData = ctx.getImageData(0, 0, c.width, c.height);
-
-//     // keeping the hand drawn stroke and turning the rest of the image to transparent 
-//     isolate();
-
-//     labelMap = FindBlobs(imgData);
-//     // Drawing the polyline
-//     poly = convexHull(labelMap);
-
-//     drawSVG(poly, height, width);  
-
-//     //get convex hull to pass to physics
-//     var cHull = new ConvexHullGrahamScan();
-//         for(var i = 0; i < labelMap.length; i++) {
-//         for(var j = 0; j < labelMap[i].length; j++) {
-//             if ( labelMap[i][j] != 0) {
-//                 cHull.addPoint(j, i);
-//             }
-//         }
-//     } 
-//     //pass vertices to physics
-//     var vertices = cHull.getHull();
-//     doodleWorld(vertices);
-//     console.log('past doodleworld call');
-// }
 
 // Removes the areas of the image that are not associated with the user's drawing
 function isolate() {
@@ -207,55 +173,252 @@ var r, g, b, a;
 
     }
 
-    ctx.putImageData(imgData, 0, 0);
+   // ctx.putImageData(imgData, 0, 0);
 
 }
 
 
 //PhysicsJS
-function doodleWorld(verts) {
-
+function doodleWorld(verts, num) {
+console.log(num + ' =num');
   Physics(function(world){
-  var renderer = Physics.renderer('canvas', {
-      el: 'playground', // id of the canvas element
-      width: 600,
-      height: 600
-  });
-  world.add( renderer );
+    var renderer = Physics.renderer('canvas', {
+        el: 'playground', // id of the canvas element
+         width: 600,
+         height: 600
+    });
+    world.add(renderer);
 
-  var polygon = Physics.body('convex-polygon', {
-      x: 10,
-      y: 10,
-    vertices: verts
-      
-  });
-  world.add( polygon );
-  world.render();
+    
+    polygon[num] = Physics.body('convex-polygon', {
+        x: 750,
+        y: 10,
+        vy: 0.2,
+      vertices: verts
+        
+    });
+    polygon[num].mass = 5;
+    world.add( polygon );
+    world.render();
 
-  // subscribe to ticker to advance the simulation
-  Physics.util.ticker.on(function( time, dt ){
-      world.step( time );
+    //Add props to world
+    //first 5 #'s are left column
+    //#1
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 200,
+        y: 575,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#2
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 200,
+        y: 550,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#3
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 200,
+        y: 525,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#4
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 200,
+        y: 500,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#5
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 200,
+        y: 475,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#6
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 175,
+        y: 575,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#7
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 175,
+        y: 550,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#8
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 175,
+        y: 525,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#9
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 175,
+        y: 500,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //#10
+    var square = Physics.body('rectangle', {
+        name: 'box',
+        x: 175,
+        y: 475,
+        vx: 0.0,
+        width: 50,
+        height: 50
+    });
+    world.add( square );
+    //wall
+    var square = Physics.body('rectangle', {
+      name: 'wall',
+      x: 350,
+      y:500,
+      treatment: 'static',
+      restitution: 0.0,
+      width: 10,
+      height: 250
+    });
+    world.add( square );
+
+    //fulcrum
+    world.add( Physics.body('convex-polygon', {
+        name: 'fulcrum',
+        x: 600,
+        y: 600,
+        treatment: 'static',
+        restitution: 0.0,
+        //vx: 0.05,
+        vertices: [
+            {x: 0, y: 0},
+            {x: 30, y: -40},
+            {x: 60, y: 0},
+        ]
+    }) );
+
+    var square = Physics.body('rectangle', {
+        name: 'lever',
+        x: 600,
+        y: 580,
+        vx: 0.0,
+        width: 350,
+        height: 10
+    });
+    world.add( square );
+
+    //ammo
+    var ammo = Physics.body('rectangle', {
+      name: 'ammo',
+      x: 490,
+      y:550,
+      width: 10,
+      height: 10,
+    });
+    world.add( ammo );
+    ammo.mass = 0.05;
+        var ammo = Physics.body('rectangle', {
+      name: 'ammo',
+      x: 510,
+      y:550,
+      width: 10,
+      height: 10,
+    });
+    world.add( ammo );
+
+        var ammo = Physics.body('rectangle', {
+      name: 'ammo',
+      x: 500,
+      y:540,
+      width: 10,
+      height: 10,
+    });
+    world.add( ammo );
+        var ammo = Physics.body('rectangle', {
+      name: 'ammo',
+      x: 510,
+      y:540,
+      width: 10,
+      height: 10,
+    });
+    world.add( ammo );
+    ammo.mass = 0.5;
+//end props
+    // subscribe to ticker to advance the simulation
+    Physics.util.ticker.on(function( time, dt ){
+        world.step( time );
+    });
+
+    // start the ticker
+    Physics.util.ticker.start();
+
+    world.on('step', function(){
+        world.render();
+    });
+    world.add( Physics.behavior('constant-acceleration') );
+
+    var bounds = Physics.aabb(0, 0, 800,600);
+    world.add( Physics.behavior('edge-collision-detection', {
+        aabb: bounds,
+        restitution: 0.3
+    }) );
+    // ensure objects bounce when edge collision is detected
+    world.add( Physics.behavior('body-impulse-response') );
+
+    world.add( Physics.behavior('body-collision-detection') );
+    world.add( Physics.behavior('sweep-prune') );
+
+    //////////// RESTARTBUTTON
+    restartbutton.addEventListener('click', function() {
+      for(var i = 0; i < polygon.length; i++){
+        world.remove(polygon[i]);
+      }
+      //reset index variable
+      polygonNum = 0;
+      polygon.splice(0, polygon.length);
+      console.log(polygon);
+      console.log('num =' + num);
+      console.log('cleared!');
+    });
+
   });
 
-  // start the ticker
-  Physics.util.ticker.start();
-
-  world.on('step', function(){
-      world.render();
-  });
-  world.add( Physics.behavior('constant-acceleration') );
-  var bounds = Physics.aabb(0, 0, 1000,200);
-
-  world.add( Physics.behavior('edge-collision-detection', {
-      aabb: bounds,
-    //  restitution: 0.3
-  }) );
-  // ensure objects bounce when edge collision is detected
-  world.add( Physics.behavior('body-impulse-response') );
-  });
 };
 
-
+console.log(playground.height);
 </script>
 </body>
 </html>
