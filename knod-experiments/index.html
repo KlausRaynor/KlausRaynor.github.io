@@ -1,0 +1,108 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>File to SVG Test</title>
+
+	<style>
+		p {
+			padding: 0;
+			margin: 0;
+		}
+
+		#output * {
+			display: inline-block;
+		}
+
+		#output div {
+			width: 218px;
+			height: 228px;
+			margin: 0 auto;
+			text-align: center;
+
+			background-color: rgb( 200, 200, 200 );
+			border: 1px solid rgb( 50, 50, 50 );
+		}
+
+		#output img, #output svg {
+			width: 200px;
+			height: 200px;
+		}
+
+	</style>
+</head>
+<body>
+	
+	<h1>Potrace JS'ed</h1>
+
+	<hr>
+	
+	<p>From <a href="http://kilobtye.github.io/potrace/">http://kilobtye.github.io/potrace/</a></p>
+	<p>I believe it only takes black and white images. Not sure about transparencies. Uses urls or files.</p>
+	<p>Also not yet sure how to use a canvas element with it.</p>
+
+	<hr>
+
+	<div>
+		<label for="filename">Filename:</label>
+		<input type="text" id="filename" value='black_circle.png'/>
+	</div>
+	<div id="svg-trigger">
+		<button type="submit">Image to SVG</button>
+	</div>
+
+
+	<div id='output' >
+		<div id='imgdiv'></div>
+		<div id='svgdiv'></div>
+	</div>
+
+	<!-- Scripts -->
+	<script src='third-party/potrace-master/potrace.js'></script>
+
+	<script>
+		var folderPath 		= 'img/';
+
+		// From index.html script from http://kilobtye.github.io/potrace/
+		var displayImg = function(){
+			console.log('displayImg()')
+			var imgdiv = document.getElementById('imgdiv');
+			// imgdiv.style.display = 'inline-block';
+			imgdiv.innerHTML = "<p>Input image:</p>";
+			imgdiv.appendChild(Potrace.img);
+		}  // End displayImg()
+
+
+		var displaySVG = function(size, type){
+			console.log('displaySVG()')
+			var svgdiv = document.getElementById('svgdiv');
+			// svgdiv.style.display = 'inline-block';
+			svgdiv.innerHTML = "<p>Result:</p>" + Potrace.getSVG(size, type);
+		}  // End displaySVG()
+
+
+		var useFile = function ( filename ) {
+			console.log('useFile()')
+			var filePath = folderPath + filename;
+			Potrace.loadImageFromUrl( filePath );
+
+			Potrace.process(function(){
+				displayImg();
+				displaySVG(0.6);
+			});
+		}  // End useFile()
+
+
+		var input 	= document.getElementById('filename'),
+			trigger = document.getElementById('svg-trigger');
+
+		trigger.addEventListener('click', function () {
+			useFile( input.value );
+		});
+	</script>
+
+</body>
+</html>
